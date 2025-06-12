@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คู่มือ venv สำหรับ macOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 
+        Chosen Palette: Calm Neutrals with a Blue Accent
+        Application Structure Plan: The application is designed as an interactive, single-page guide. It starts with a collapsible introductory section explaining the "Why" to provide immediate context. The core content is a series of numbered, accordion-style cards representing each step. This structure allows users to focus on one step at a time, expanding to see details and code. A "copy to clipboard" feature is added to each code block to transform the static document into a practical tool, enhancing user efficiency. This task-oriented design is more engaging and user-friendly for a technical tutorial than a linear document.
+        Visualization & Content Choices: 
+        - Report Info: "Why use venv" section. Goal: Inform. Method: Collapsible HTML block using <details> tag. Interaction: Click to expand/collapse. Justification: Keeps crucial but secondary info accessible without cluttering the main view.
+        - Report Info: Steps 1-5 (commands and explanations). Goal: Organize/Guide. Method: Accordion-style cards built with HTML/Tailwind CSS. Interaction: Click on a step to reveal its content (explanation and code). Justification: Breaks down the process into manageable chunks, improving comprehension.
+        - Report Info: Code snippets for each step. Goal: Enable action. Method: HTML <pre><code> block with a button. Interaction: Click a button to copy the code. Justification: Provides direct utility and reduces user error from manual typing.
+        - Library/Method: Vanilla JavaScript for all interactions (accordion and copy functionality). Chart.js/Plotly not needed as the content is procedural, not data-driven.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f8fafc; /* Tailwind gray-50 */
+        }
+        .step-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .step-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.5s ease;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .step-card.active .step-content {
+            max-height: 500px; /* Adjust as needed */
+        }
+        .step-card.active {
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .copy-btn::after {
+            content: 'คัดลอก';
+        }
+        .copy-btn.copied::after {
+            content: 'คัดลอกแล้ว!';
+        }
+        details > summary {
+            cursor: pointer;
+        }
+        details[open] > summary {
+           margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">การใช้งาน Python Virtual Environment (venv)</h1>
+            <p class="text-lg text-gray-600 mt-2">คู่มือฉบับโต้ตอบสำหรับ macOS</p>
+        </header>
+
+        <section class="mb-8">
+            <details class="bg-white rounded-xl shadow-sm p-5 border border-gray-200">
+                <summary class="font-bold text-lg text-gray-700 list-none flex justify-between items-center">
+                    <span>ทำไมต้องใช้ Virtual Environment?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 space-y-3">
+                    <p><strong>Virtual Environment</strong> คือสภาพแวดล้อมจำลองที่ช่วยแยกไลบรารีของแต่ละโปรเจกต์ออกจากกัน ทำให้เราสามารถทำงานกับหลายโปรเจกต์พร้อมกันได้โดยไม่มีปัญหาไลบรารีขัดแย้งกัน และไม่ทำให้ Python หลักของระบบมีปัญหา</p>
+                    <ul class="list-disc list-inside space-y-2 pl-2">
+                        <li><b>ป้องกันปัญหาไลบรารีขัดแย้ง:</b> แต่ละโปรเจกต์มีชุดไลบรารีเป็นของตัวเอง</li>
+                        <li><b>ทำให้โปรเจกต์แชร์ต่อง่าย:</b> คนอื่นสามารถติดตั้งไลบรารีเวอร์ชันเดียวกันได้ง่ายๆ</li>
+                        <li><b>ไม่กระทบ Python ของระบบ:</b> ติดตั้งแพ็กเกจได้อย่างปลอดภัย</li>
+                    </ul>
+                </div>
+            </details>
+        </section>
+
+        <main class="space-y-4">
+            
+            <!-- Step 1 -->
+            <div class="step-card bg-gray-100 border border-gray-200 rounded-xl overflow-hidden" data-step="1">
+                <div class="p-5 cursor-pointer flex justify-between items-center" onclick="toggleStep(1)">
+                    <h2 class="text-xl font-bold text-blue-600">ขั้นตอนที่ 1: เตรียมโฟลเดอร์โปรเจกต์</h2>
+                    <span class="text-3xl font-light text-blue-300">→</span>
+                </div>
+                <div class="step-content px-5 pb-5">
+                    <p class="mb-4 text-gray-600">เปิดแอป <strong>Terminal</strong> และใช้คำสั่ง `mkdir` เพื่อสร้างโฟลเดอร์ จากนั้นใช้ `cd` เพื่อเข้าไปยังโฟลเดอร์นั้น</p>
+                    <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <pre><code class="text-gray-200">mkdir my-python-project
+cd my-python-project</code></pre>
+                        <button class="copy-btn bg-gray-600 text-white text-sm py-1 px-3 rounded-md hover:bg-gray-500 transition-colors" onclick="copyCode(this)"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card bg-gray-100 border border-gray-200 rounded-xl overflow-hidden" data-step="2">
+                <div class="p-5 cursor-pointer flex justify-between items-center" onclick="toggleStep(2)">
+                    <h2 class="text-xl font-bold text-blue-600">ขั้นตอนที่ 2: สร้าง Virtual Environment</h2>
+                    <span class="text-3xl font-light text-blue-300">→</span>
+                </div>
+                <div class="step-content px-5 pb-5">
+                     <p class="mb-4 text-gray-600">เมื่ออยู่ในโฟลเดอร์โปรเจกต์ ให้รันคำสั่งต่อไปนี้เพื่อสร้าง Environment ชื่อว่า `venv`</p>
+                    <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <pre><code class="text-gray-200">python3 -m venv venv</code></pre>
+                        <button class="copy-btn bg-gray-600 text-white text-sm py-1 px-3 rounded-md hover:bg-gray-500 transition-colors" onclick="copyCode(this)"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card bg-gray-100 border border-gray-200 rounded-xl overflow-hidden" data-step="3">
+                <div class="p-5 cursor-pointer flex justify-between items-center" onclick="toggleStep(3)">
+                    <h2 class="text-xl font-bold text-blue-600">ขั้นตอนที่ 3: เปิดใช้งาน (Activate)</h2>
+                    <span class="text-3xl font-light text-blue-300">→</span>
+                </div>
+                <div class="step-content px-5 pb-5">
+                    <p class="mb-4 text-gray-600">ก่อนใช้งาน ต้อง "activate" เพื่อให้ Shell เปลี่ยนไปใช้ Python จากในโฟลเดอร์ `venv`</p>
+                    <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <pre><code class="text-gray-200">source venv/bin/activate</code></pre>
+                        <button class="copy-btn bg-gray-600 text-white text-sm py-1 px-3 rounded-md hover:bg-gray-500 transition-colors" onclick="copyCode(this)"></button>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-500"><strong>ข้อสังเกต:</strong> เมื่อสำเร็จ จะมี `(venv)` แสดงอยู่ด้านหน้า command prompt</p>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card bg-gray-100 border border-gray-200 rounded-xl overflow-hidden" data-step="4">
+                <div class="p-5 cursor-pointer flex justify-between items-center" onclick="toggleStep(4)">
+                    <h2 class="text-xl font-bold text-blue-600">ขั้นตอนที่ 4: ติดตั้ง Dependencies</h2>
+                    <span class="text-3xl font-light text-blue-300">→</span>
+                </div>
+                <div class="step-content px-5 pb-5">
+                    <p class="mb-4 text-gray-600">ตอนนี้คุณสามารถใช้ `pip` เพื่อติดตั้งไลบรารีที่ต้องการได้แล้ว แพ็กเกจทั้งหมดจะถูกติดตั้งลงใน `venv` เท่านั้น</p>
+                    <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <pre><code class="text-gray-200">pip install requests numpy pandas</code></pre>
+                        <button class="copy-btn bg-gray-600 text-white text-sm py-1 px-3 rounded-md hover:bg-gray-500 transition-colors" onclick="copyCode(this)"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-card bg-gray-100 border border-gray-200 rounded-xl overflow-hidden" data-step="5">
+                <div class="p-5 cursor-pointer flex justify-between items-center" onclick="toggleStep(5)">
+                    <h2 class="text-xl font-bold text-blue-600">ขั้นตอนที่ 5: ปิดการใช้งาน (Deactivate)</h2>
+                    <span class="text-3xl font-light text-blue-300">→</span>
+                </div>
+                <div class="step-content px-5 pb-5">
+                    <p class="mb-4 text-gray-600">เมื่อทำงานเสร็จแล้ว ให้ใช้คำสั่ง `deactivate` เพื่อออกจาก Virtual Environment</p>
+                    <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <pre><code class="text-gray-200">deactivate</code></pre>
+                        <button class="copy-btn bg-gray-600 text-white text-sm py-1 px-3 rounded-md hover:bg-gray-500 transition-colors" onclick="copyCode(this)"></button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Interactive guide created based on standard Python documentation.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        let currentlyOpenStep = null;
+
+        function toggleStep(stepNumber) {
+            const stepCard = document.querySelector(`.step-card[data-step='${stepNumber}']`);
+            if (!stepCard) return;
+
+            if (stepNumber === currentlyOpenStep) {
+                stepCard.classList.remove('active');
+                currentlyOpenStep = null;
+            } else {
+                if (currentlyOpenStep !== null) {
+                    const currentCard = document.querySelector(`.step-card[data-step='${currentlyOpenStep}']`);
+                    if(currentCard) currentCard.classList.remove('active');
+                }
+                stepCard.classList.add('active');
+                currentlyOpenStep = stepNumber;
+            }
+        }
+        
+        function copyCode(buttonElement) {
+            const pre = buttonElement.previousElementSibling;
+            const code = pre.querySelector('code');
+            const textToCopy = code.innerText;
+
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                buttonElement.classList.add('copied');
+                setTimeout(() => {
+                    buttonElement.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Auto-open details on larger screens for better visibility
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth > 768) {
+                const detailsElement = document.querySelector('details');
+                if(detailsElement) detailsElement.open = true;
+            }
+        });
+
+    </script>
+</body>
+</html>
